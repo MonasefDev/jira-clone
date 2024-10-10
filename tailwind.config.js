@@ -3,10 +3,10 @@ module.exports = {
   darkMode: ["class"],
   content: [
     // this is the list of files that will be processed by tailwind
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./feat/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/feat/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
