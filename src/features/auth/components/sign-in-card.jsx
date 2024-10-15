@@ -1,4 +1,5 @@
-import React from "react";
+import { DottedSeparator } from "@/src/components/dotted-separator";
+import { Button } from "@/src/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,31 +8,25 @@ import {
 } from "@/src/components/ui/card";
 import {
   Form,
-  FormItem,
   FormControl,
   FormField,
+  FormItem,
   FormMessage,
 } from "@/src/components/ui/form";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
 import { Input } from "@/src/components/ui/input";
-import { DottedSeparator } from "@/src/components/dotted-separator";
-import { Button } from "@/src/components/ui/button";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-
-// Validation schema using Zod
-const formSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Minimum of 8 characters required"),
-});
+import { useForm } from "react-hook-form";
+import { FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+import { loginSchema } from "../schemas";
+import { useLogin } from "@/src/app/api/[...route]/use-login";
 
 export const SignInCard = () => {
+  const { mutate } = useLogin();
   // Initialize react-hook-form with zod validation
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "", // Initial empty value for email
       password: "", // Initial empty value for password
@@ -40,7 +35,10 @@ export const SignInCard = () => {
 
   // Form submission handler
   const onSubmit = (formData) => {
-    console.log("Form Data: ", formData);
+    mutate({
+      json: formData,
+      //param: { userId: "123" }, //!just to show how to pass params to the mutate function
+    });
   };
 
   return (
