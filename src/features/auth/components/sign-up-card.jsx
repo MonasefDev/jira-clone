@@ -1,51 +1,43 @@
-import React from "react";
+import { DottedSeparator } from "@/src/components/dotted-separator";
+import { Button } from "@/src/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
-import Link from "next/link";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
-  FormLabel,
-  FormControl,
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DottedSeparator } from "@/src/components/dotted-separator";
-
-// Define schema using Zod for validation
-const signupSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }), // Name validation
-  email: z.string().email({ message: "Invalid email format" }), // Email validation
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters" }), // Password validation
-});
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+import { signupSchema } from "../schemas";
+import { useSignUp } from "@/src/app/api/[...route]/use-signup";
 
 export const SignUpCard = () => {
-  // Initialize react-hook-form with zod schema resolver
+  const { mutate: signUp } = useSignUp();
   const form = useForm({
     resolver: zodResolver(signupSchema), // Use zod for validation
     defaultValues: {
-      name: "", // Initial empty value to avoid uncontrolled to controlled warning
-      email: "", // Initial empty value
-      password: "", // Initial empty value
+      name: "",
+      email: "",
+      password: "",
     },
   });
 
   // Form submission handler
-  const onSubmit = (data) => {
-    console.log("Form Data:", data); // Log the form data on successful submission
+  const onSubmit = (formData) => {
+    signUp({
+      json: formData,
+    });
   };
 
   return (
