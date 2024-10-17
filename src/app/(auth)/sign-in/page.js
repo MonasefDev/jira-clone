@@ -1,8 +1,12 @@
-"use client";
 import { SignInCard } from "@/src/features/auth/components/sign-in-card";
+import { getCurrentUser } from "@/src/lib/actions";
+import { redirect } from "next/navigation";
 import React from "react";
 
-const SingInPage = () => {
+const SingInPage = async () => {
+  const user = await getCurrentUser();
+
+  if (user) redirect("/");
   return <SignInCard />;
 };
 

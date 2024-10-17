@@ -1,3 +1,5 @@
+"use client";
+
 import { DottedSeparator } from "@/src/components/dotted-separator";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -19,11 +21,12 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+
 import { loginSchema } from "../schemas";
-import { useLogin } from "@/src/app/api/[...route]/use-login";
+import { useLogin } from "@/src/features/auth/api/use-login";
 
 export const SignInCard = () => {
-  const { mutate } = useLogin();
+  const { mutate, isPending: isLoading } = useLogin();
   // Initialize react-hook-form with zod validation
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -95,7 +98,12 @@ export const SignInCard = () => {
             />
 
             {/* Submit Button */}
-            <Button type="submit" disabled={false} size="lg" className="w-full">
+            <Button
+              disabled={isLoading}
+              type="submit"
+              size="lg"
+              className="w-full"
+            >
               Login
             </Button>
           </form>
@@ -109,7 +117,7 @@ export const SignInCard = () => {
           disabled={false}
           variant="secondary"
           size="lg"
-          className="w-full"
+          className="w-full disabled:cursor-not-allowed"
         >
           <FcGoogle className="mr-2 size-5" />
           Login with Google
