@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { signupSchema } from "../schemas";
-import { useSignUp } from "@/src/app/api/[...route]/use-signup";
+import { useSignUp } from "@/src/features/auth/api/use-signup";
 
 export const SignUpCard = () => {
   const { mutate: signUp } = useSignUp();
