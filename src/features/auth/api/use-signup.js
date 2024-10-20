@@ -1,6 +1,7 @@
 import { client } from "@/src/lib/rpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export const useSignUp = () => {
   const router = useRouter();
@@ -12,11 +13,17 @@ export const useSignUp = () => {
         param,
       });
 
+      if (!res.ok) throw new Error("failed to register");
+
       return res.json();
     },
     onSuccess: () => {
+      toast.success("you are registered!");
       router.refresh();
       queryClient.invalidateQueries({ queryKey: ["current-user"] });
+    },
+    onError: () => {
+      toast.error("failed to register");
     },
   });
   return register;
