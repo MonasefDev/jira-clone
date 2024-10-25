@@ -1,16 +1,19 @@
 import { redirect } from "next/navigation";
 
-import { CreateWorkspaceForm } from "@/src/features/workspaces/components/create-workspace-form";
-import { getCurrentUser } from "../../lib/actions";
+import { getCurrentUser } from "../../features/auth/actions";
+import { getWorkSpaces } from "@/src/features/workspaces/actions";
 
 export default async function Home() {
   const user = await getCurrentUser();
+  const { data: workspaces } = await getWorkSpaces();
 
-  if (!user) return redirect("/sign-in");
+  // console.log(workspaces);
 
-  return (
-    <div>
-      <CreateWorkspaceForm />
-    </div>
-  );
+  if (!user) redirect("/sign-in");
+
+  if (workspaces?.length === 0) {
+    redirect("/workspaces/create");
+  } else {
+    redirect(`/workspaces/${workspaces[0].$id}`);
+  }
 }
