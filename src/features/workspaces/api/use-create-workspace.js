@@ -12,7 +12,7 @@ export const useCreateWorkspace = () => {
       });
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: ({ data }) => {
       toast.success("Workspace created successfully");
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },

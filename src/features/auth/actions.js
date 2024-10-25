@@ -2,7 +2,7 @@
 
 import { getCookie } from "hono/cookie";
 import { Account, Client } from "node-appwrite";
-import { AUTH_COOKIE } from "../features/auth/constants";
+import { AUTH_COOKIE } from "./constants";
 import { cookies } from "next/headers";
 
 export const getCurrentUser = async () => {

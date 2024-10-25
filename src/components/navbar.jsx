@@ -3,7 +3,7 @@ import { MobileSidebar } from "./mobile-navbar";
 
 export const Navbar = () => {
   return (
-    <nav className="pt-4 px-6 flex items-center justify-between">
+    <nav className="pt-4 px-6 flex items-center pb-4 justify-between border-b border-neutral-300">
       <div className="flex-col hidden lg:flex">
         <h1 className="text-2xl font-semibold">Home</h1>
         <p className="text-muted-foreground">
