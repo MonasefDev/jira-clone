@@ -21,6 +21,7 @@ import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { signupSchema } from "../schemas";
 import { useSignUp } from "@/src/features/auth/api/use-signup";
+import { redirect } from "next/dist/server/api-utils";
 
 export const SignUpCard = () => {
   const { mutate: signUp } = useSignUp();
@@ -35,9 +36,17 @@ export const SignUpCard = () => {
 
   // Form submission handler
   const onSubmit = (formData) => {
-    signUp({
-      json: formData,
-    });
+    signUp(
+      {
+        json: formData,
+      },
+      {
+        onSuccess: () => {
+          form.reset();
+          redirect("/");
+        },
+      }
+    );
   };
 
   return (

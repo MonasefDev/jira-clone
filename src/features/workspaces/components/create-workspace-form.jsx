@@ -175,7 +175,7 @@ export const CreateWorkspaceForm = ({ onCancel }) => {
                 onClick={onCancel}
                 size="lg"
                 disabled={isPending}
-                // className={cn(!onCancel && "invisible")}
+                className={cn(!onCancel && "invisible")}
               >
                 Cancel
               </Button>

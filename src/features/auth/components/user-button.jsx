@@ -1,17 +1,13 @@
 "use client";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuItem,
   DropdownMenuContent,
-} from "@/src/components/ui/dropdown-menu";
-import { DottedSeparator } from "@/src/components/dotted-separator";
+} from "@/components/ui/dropdown-menu";
+import { DottedSeparator } from "@/components/dotted-separator";
 
 import { useLogout } from "../api/use-logout";
 import { Loader, LogOut } from "lucide-react";

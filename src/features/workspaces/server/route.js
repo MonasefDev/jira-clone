@@ -35,16 +35,16 @@ const app = new Hono()
 
     const workspaces = await databases.listDocuments(
       DATABASE_ID,
-      WORKSPACES_ID,
-      [Query.orderDesc("$createdAt")],
-      [Query.contains("$id", workspaceIds)]
+      WORKSPACES_ID
     );
 
-    // const workspacesUser = workspaces?.documents.filter((workspace) => {
-    //   return workspaceIds.includes(workspace.$id);
-    // });
+    const workspacesOfCurrentUser = workspaces?.documents.filter((workspace) =>
+      workspaceIds.includes(workspace.$id)
+    );
 
-    return c.json({ data: workspaces?.documents });
+    console.log(workspacesOfCurrentUser);
+
+    return c.json({ data: workspacesOfCurrentUser });
   })
   .post(
     "/create",
