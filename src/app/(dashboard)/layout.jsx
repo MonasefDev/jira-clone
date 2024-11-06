@@ -1,9 +1,15 @@
-import { Navbar } from "@/src/components/navbar";
-import Sidebar from "@/src/components/sidebar";
-import { CreateWorkspaceModal } from "@/src/features/workspaces/components/create-workspace-modal";
 import React from "react";
 
-const DashboardLayout = ({ children }) => {
+import Sidebar from "../../components/sidebar";
+
+import { CreateWorkspaceModal } from "../../features/workspaces/components/create-workspace-modal";
+import { getCurrentUser } from "../../features/auth/queries";
+import { redirect } from "next/navigation";
+import { Navbar } from "../../components/navbar";
+
+const DashboardLayout = async ({ children }) => {
+  const user = await getCurrentUser();
+  if (!user) redirect("/sign-in");
   return (
     <div className="min-h-screen">
       <CreateWorkspaceModal />

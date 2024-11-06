@@ -1,4 +1,4 @@
-import { client } from "@/src/lib/rpc";
+import { client } from "../../../lib/rpc";
 import { useQuery } from "@tanstack/react-query";
 
 export const useGetWorkspaces = () => {
@@ -6,11 +6,11 @@ export const useGetWorkspaces = () => {
     queryKey: ["workspaces"],
     queryFn: async () => {
       const response = await client.api.workspaces.$get();
-      if (!response.ok) {
+      const resJson = await response.json();
+      if (!resJson.success) {
         throw new Error("failed to get workspaces");
       }
-      const { data } = await response.json();
-
+      const { data } = resJson;
       return data;
     },
   });

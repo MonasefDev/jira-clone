@@ -4,10 +4,10 @@ import { Hono } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 
 import { loginSchema, signupSchema } from "../schemas";
-import { createAdminClient } from "@/src/lib/appwrite";
+import { createAdminClient } from "../../../lib/appwrite";
 import { AUTH_COOKIE } from "../constants";
 import { ID } from "node-appwrite";
-import { sessionMiddleware } from "@/src/lib/session-middleware";
+import { sessionMiddleware } from "../../../lib/session-middleware";
 
 const auth = new Hono()
   .get("/current", sessionMiddleware, async (c) => {

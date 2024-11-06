@@ -1,4 +1,4 @@
-import { client } from "@/src/lib/rpc";
+import { client } from "../../../lib/rpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";

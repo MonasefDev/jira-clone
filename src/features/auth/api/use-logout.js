@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { client } from "@/src/lib/rpc";
+import { client } from "../../../lib/rpc";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 

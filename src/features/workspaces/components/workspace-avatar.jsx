@@ -1,7 +1,7 @@
 import Image from "next/image";
 
-import { cn } from "@/src/lib/utils";
-import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
+import { cn } from "../../../lib/utils";
+import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
 
 export const WorkspaceAvatar = ({ image, name, className }) => {
   if (image) {
@@ -14,12 +14,14 @@ export const WorkspaceAvatar = ({ image, name, className }) => {
               className
             )}
           >
-            <Image
-              src={image ?? "/default-avatar.png"}
-              alt={name}
-              fill
-              className="object-cover"
-            />
+            {image && (
+              <Image
+                src={image ?? "/default-avatar.png"}
+                alt={name}
+                fill
+                className="object-cover"
+              />
+            )}
           </div>
         </AvatarFallback>
       </Avatar>

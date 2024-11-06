@@ -1,4 +1,4 @@
-import { client } from "@/src/lib/rpc";
+import { client } from "../../../lib/rpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
@@ -6,18 +6,27 @@ export const useCreateWorkspace = () => {
   const queryClient = useQueryClient();
   const workspace = useMutation({
     mutationFn: async ({ form, param }) => {
-      const res = await client.api.workspaces.create.$post({
+      const response = await client.api.workspaces.create.$post({
         form,
         param,
       });
-      return res.json();
+
+      const resJson = await response.json();
+
+      if (!resJson.success) {
+        const { message } = await res.json();
+        throw new Error(message);
+      }
+      const { data } = resJson;
+      return data;
     },
-    onSuccess: ({ data }) => {
-      toast.success("Workspace created successfully");
+
+    onSuccess: ({ data, message }) => {
+      toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
-    onError: () => {
-      toast.error("Failed to create workspace");
+    onError: (err) => {
+      toast.error(err.message);
     },
   });
   return workspace;
