@@ -2,15 +2,16 @@
 import { useForm } from "react-hook-form";
 import { useRef } from "react";
 
+import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/src/components/ui/button";
+import { Button } from "../../../components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/src/components/ui/card";
+} from "../../../components/ui/card";
 import {
   Form,
   FormControl,
@@ -18,14 +19,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/src/components/ui/form";
-import { Input } from "@/src/components/ui/input";
+} from "../../../components/ui/form";
+import { Input } from "../../../components/ui/input";
 
-import { cn } from "@/src/lib/utils";
+import { cn } from "../../../lib/utils";
 import { createWorkspaceSchema } from "../schemas";
-import { DottedSeparator } from "@/src/components/dotted-separator";
+import { DottedSeparator } from "../../../components/dotted-separator";
 import { useCreateWorkspace } from "../api/use-create-workspace";
-import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useGetWorkspace } from "../api/use-get-workspaces";
@@ -61,9 +61,9 @@ export const CreateWorkspaceForm = ({ onCancel }) => {
         form: finalData,
       },
       {
-        onSuccess: () => {
+        onSuccess: ({ data: workspace }) => {
           form.reset();
-          router.push(`/workspaces/${data.$id}`);
+          router.push(`/workspaces/${workspace.$id}`);
         },
       }
     );
@@ -138,7 +138,7 @@ export const CreateWorkspaceForm = ({ onCancel }) => {
                             type="button"
                             disabled={isPending}
                             size="xs"
-                            variant="teritary"
+                            variant="destructive"
                             className="w-fit mt-2"
                             onClick={() => {
                               field.onChange(null);
@@ -154,7 +154,7 @@ export const CreateWorkspaceForm = ({ onCancel }) => {
                             type="button"
                             disabled={isPending}
                             size="xs"
-                            variant="teritary"
+                            variant="tertirary"
                             className="w-fit mt-2"
                             onClick={() => inputRef.current?.click()}
                           >

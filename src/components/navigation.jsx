@@ -9,12 +9,12 @@ import {
   GoHomeFill,
 } from "react-icons/go";
 import { cn } from "../lib/utils";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 const routes = [
   {
     label: "Home",
-    href: "/",
+    href: "",
     icon: GoHome,
     activeIcon: GoHomeFill,
   },
@@ -40,14 +40,17 @@ const routes = [
 
 export const Navigation = () => {
   const pathname = usePathname();
+  const { workspaceId } = useParams();
+
   return (
     <ul className="flex flex-col">
       {routes.map((item) => {
-        const isActive = pathname === item.href;
+        const fullHref = `/workspaces/${workspaceId}${item.href}`;
+        const isActive = pathname === fullHref;
         const Icon = isActive ? item.activeIcon : item.icon;
 
         return (
-          <Link key={item.label} href={item.href}>
+          <Link key={item.label} href={fullHref}>
             <div
               className={cn(
                 "flex items-center gap-2.5 p-2.5 rounded-md font-medium hover:text-primary transition text-neutral-500",

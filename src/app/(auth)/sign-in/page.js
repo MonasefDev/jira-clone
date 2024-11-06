@@ -1,5 +1,5 @@
-import { SignInCard } from "@/src/features/auth/components/sign-in-card";
-import { getCurrentUser } from "@/src/features/auth/actions";
+import { SignInCard } from "../../../features/auth/components/sign-in-card";
+import { getCurrentUser } from "../../../features/auth/queries";
 import { redirect } from "next/navigation";
 import React from "react";
 

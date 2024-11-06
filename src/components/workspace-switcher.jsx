@@ -19,8 +19,8 @@ export const WorkspaceSwitcher = () => {
   const { data: workspaces, isLoading } = useGetWorkspaces();
   const { workspaceId } = useParams();
   const { open } = useCreateWorkspaceModal();
-
   const router = useRouter();
+
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex items-center justify-between">

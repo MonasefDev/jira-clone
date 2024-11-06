@@ -1,9 +1,9 @@
 import React from "react";
 
-import Sidebar from "@/src/components/sidebar";
+import Sidebar from "../../components/sidebar";
 
-import { CreateWorkspaceModal } from "@/src/features/workspaces/components/create-workspace-modal";
-import { getCurrentUser } from "../../features/auth/actions";
+import { CreateWorkspaceModal } from "../../features/workspaces/components/create-workspace-modal";
+import { getCurrentUser } from "../../features/auth/queries";
 import { redirect } from "next/navigation";
 import { Navbar } from "../../components/navbar";
 

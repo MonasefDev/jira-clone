@@ -1,6 +1,30 @@
 import "server-only"; // to ensure we only use it in the server for the security
 
-import { Account, Client } from "node-appwrite";
+import { Account, Client, Databases, Users } from "node-appwrite";
+import { cookies } from "next/headers";
+import { AUTH_COOKIE } from "../features/auth/constants";
+
+export async function createSessionClient() {
+  const client = new Client()
+    .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
+    .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT);
+
+  const session = cookies().get(AUTH_COOKIE);
+  if (!session || !session.value) {
+    throw new Error("Unauthorized");
+  }
+
+  client.setSession(session.value);
+
+  return {
+    get account() {
+      return new Account(client);
+    },
+    get databases() {
+      return new Databases(client);
+    },
+  };
+}
 
 export async function createAdminClient() {
   const client = new Client()
@@ -11,6 +35,9 @@ export async function createAdminClient() {
   return {
     get account() {
       return new Account(client);
+    },
+    get users() {
+      return new Users(client);
     },
   };
 }
