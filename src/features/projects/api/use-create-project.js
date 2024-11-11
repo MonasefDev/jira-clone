@@ -2,11 +2,12 @@ import { client } from "../../../lib/rpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-export const useDeleteMember = () => {
+export const useCreateProject = () => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: async ({ param }) => {
-      const response = await client.api.members[":memberId"].$delete({
+    mutationFn: async ({ form, param }) => {
+      const response = await client.api.projects.create.$post({
+        form,
         param,
       });
 
@@ -19,12 +20,13 @@ export const useDeleteMember = () => {
       const { data } = resJson;
       return data;
     },
+
     onSuccess: (data) => {
-      toast.success("Member deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+      toast.success("Project created successfully");
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (err) => {
+      toast.error(err.message);
     },
   });
   return mutation;

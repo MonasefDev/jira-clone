@@ -14,7 +14,7 @@ export const useCreateWorkspace = () => {
       const resJson = await response.json();
 
       if (!resJson.success) {
-        const { message } = await res.json();
+        const { message } = await response.json();
         throw new Error(message);
       }
       const { data } = resJson;

@@ -1,19 +1,20 @@
 import { client } from "../../../lib/rpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-export const useJoinWorkspace = () => {
+export const useUpdateProject = () => {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: async ({ param, json }) => {
-      const response = await client.api.workspaces[":workspaceId"][
-        "join"
-      ].$post({
+    mutationFn: async ({ form, param }) => {
+      const response = await client.api.projects[":projectId"].$patch({
+        form,
         param,
-        json,
       });
 
       const resJson = await response.json();
+
       if (!resJson.success) {
         const { message } = resJson;
         throw new Error(message);
@@ -22,8 +23,12 @@ export const useJoinWorkspace = () => {
       return data;
     },
     onSuccess: (data) => {
-      toast.success("Workspace joined successfully");
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      toast.success("Project updated successfully");
+      // router.refresh();
+      queryClient.invalidateQueries({
+        queryKey: ["projects", data?.workspaceId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["project", data?.$id] });
     },
     onError: (err) => {
       toast.error(err.message);
