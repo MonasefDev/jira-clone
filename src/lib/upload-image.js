@@ -2,7 +2,7 @@ import { ID } from "node-appwrite";
 import { IMAGES_BUCKET_ID } from "./config";
 
 export const uploadImage = async ({ image, storage }) => {
-  let uploadedImageUrl = "";
+  let uploadedImageUrl = null;
   if (image instanceof File) {
     const file = await storage.createFile(IMAGES_BUCKET_ID, ID.unique(), image);
 
