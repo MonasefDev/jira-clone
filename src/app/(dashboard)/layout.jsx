@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { Navbar } from "../../components/navbar";
 import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
 import { CreateWorkspaceModal } from "@/features/workspaces/components/create-workspace-modal";
+import { CreateTaskModal } from "@/features/tasks/components/CreateTaskModal";
 
 const DashboardLayout = async ({ children }) => {
   const user = await getCurrentUser();
@@ -15,6 +16,7 @@ const DashboardLayout = async ({ children }) => {
     <div className="min-h-screen">
       <CreateWorkspaceModal />
       <CreateProjectModal />
+      <CreateTaskModal />
       <div className="flex w-full h-full">
         <div className="fixed bg-slate-600 top-0 left-0 lg:w-[264px] hidden lg:block h-full overflow-auto">
           <Sidebar />

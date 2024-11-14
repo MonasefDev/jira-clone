@@ -55,14 +55,9 @@ export const CreateProjectForm = ({ onCancel }) => {
       { form: finalData, param: { workspaceId } },
       {
         onSuccess: (data) => {
-          if (data) {
-            form.reset();
-            window.localStorage.setItem("projectId", data.$id);
-            router.push(`/workspaces/${workspaceId}/projects/${data.$id}`);
-            onCancel?.();
-          } else {
-            console.error("Unexpected data format:", data);
-          }
+          form.reset();
+          // onCancel?.();
+          router.push(`/workspaces/${workspaceId}/projects/${data.$id}`);
         },
       }
     );

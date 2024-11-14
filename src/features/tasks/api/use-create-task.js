@@ -1,16 +1,13 @@
 import { client } from "../../../lib/rpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-export const useUpdateProject = () => {
-  const router = useRouter();
+export const useCreateTask = () => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: async ({ form, param }) => {
-      const response = await client.api.projects[":projectId"].$patch({
+    mutationFn: async ({ form }) => {
+      const response = await client.api.tasks.$post({
         form,
-        param,
       });
 
       const resJson = await response.json();
@@ -22,13 +19,10 @@ export const useUpdateProject = () => {
       const { data } = resJson;
       return data;
     },
+
     onSuccess: (data) => {
-      toast.success("Project updated successfully");
-      router.push(`/workspaces/${data?.workspaceId}/projects/${data?.$id}`);
-      queryClient.invalidateQueries({
-        queryKey: ["projects", data?.workspaceId],
-      });
-      queryClient.invalidateQueries({ queryKey: ["project", data?.$id] });
+      toast.success("Task created successfully");
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
     onError: (err) => {
       toast.error(err.message);

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useCallback } from "react";
 import { RiAddCircleFill } from "react-icons/ri";
 import { useParams, useRouter } from "next/navigation";
 
@@ -16,10 +16,19 @@ import { WorkspaceAvatar } from "../features/workspaces/components/workspace-ava
 import { useCreateWorkspaceModal } from "../features/workspaces/hooks/use-create-workspace-modal";
 
 export const WorkspaceSwitcher = () => {
-  const { data: workspaces, isLoading } = useGetWorkspaces();
+  const { data: workspaces, isPending: isLoading } = useGetWorkspaces();
   const { workspaceId } = useParams();
   const { open } = useCreateWorkspaceModal();
   const router = useRouter();
+
+  const onSelect = useCallback(
+    (workspaceId) => {
+      router.push(`/workspaces/${workspaceId}`);
+    },
+    [router]
+  );
+
+  if (isLoading) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -33,8 +42,9 @@ export const WorkspaceSwitcher = () => {
         />
       </div>
       <Select
+        defaultValue={workspaceId}
         value={workspaceId}
-        onValueChange={(value) => router.push(`/workspaces/${value}`)}
+        onValueChange={onSelect}
       >
         <SelectTrigger className="w-full bg-neutral-200 font-medium py-1 px-2 ">
           <SelectValue

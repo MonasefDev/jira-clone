@@ -6,7 +6,7 @@ function WorkspacIdPage() {
   const { workspaceId } = useParams();
   return (
     <div>
-      <h1>{workspaceId}</h1>
+      <h1>workspace page : {workspaceId}</h1>
     </div>
   );
 }

@@ -73,7 +73,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }) => {
       {
         onSuccess: () => {
           form.reset();
-          // router.push(`/workspaces/${workspace.$id}`);
+          router.push(`/workspaces/${initialValues.$id}`);
         },
       }
     );
