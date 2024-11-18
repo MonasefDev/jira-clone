@@ -13,11 +13,14 @@ export const useUpdateWorkspace = () => {
         param,
       });
 
-      if (!response.success) {
-        const { message } = await response.json();
+      const resJson = await response.json();
+
+      if (!resJson.success) {
+        const { message } = resJson;
         throw new Error(message);
       }
-      return response.json();
+      const { data } = resJson;
+      return data;
     },
     onSuccess: (data) => {
       toast.success("Workspace updated successfully");

@@ -33,6 +33,8 @@ const Projects = () => {
         <div className="w-full py-4 flex justify-center items-center relative">
           <Loader className="animate-spin size-6 text-muted-foreground" />
         </div>
+      ) : projects?.length === 0 ? (
+        <div className="text-neutral-500 py-1 px-2">No projects found</div>
       ) : (
         projects?.map((project) => {
           const href = `/workspaces/${workspaceId}/projects/${project.$id}`;

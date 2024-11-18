@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useCallback } from "react";
 import { RiAddCircleFill } from "react-icons/ri";
 import { useParams, useRouter } from "next/navigation";
 
@@ -14,13 +14,22 @@ import {
 import { useGetWorkspaces } from "../features/workspaces/api/use-get-workspaces";
 import { WorkspaceAvatar } from "../features/workspaces/components/workspace-avatar";
 import { useCreateWorkspaceModal } from "../features/workspaces/hooks/use-create-workspace-modal";
+import { Loader } from "lucide-react";
 
 export const WorkspaceSwitcher = () => {
-  const { data: workspaces, isLoading } = useGetWorkspaces();
+  const { data: workspaces, isPending: isLoading } = useGetWorkspaces();
   const { workspaceId } = useParams();
+  const [selectedId, setSelectedId] = React.useState(workspaceId);
   const { open } = useCreateWorkspaceModal();
   const router = useRouter();
 
+  const onSelect = useCallback(
+    (workspaceId) => {
+      setSelectedId(workspaceId);
+      router.push(`/workspaces/${workspaceId}`);
+    },
+    [router]
+  );
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex items-center justify-between">
@@ -33,8 +42,9 @@ export const WorkspaceSwitcher = () => {
         />
       </div>
       <Select
-        value={workspaceId}
-        onValueChange={(value) => router.push(`/workspaces/${value}`)}
+        defaultValue={workspaces?.[0].$id}
+        value={selectedId}
+        onValueChange={onSelect}
       >
         <SelectTrigger className="w-full bg-neutral-200 font-medium py-1 px-2 ">
           <SelectValue

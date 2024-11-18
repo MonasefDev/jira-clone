@@ -1,20 +1,18 @@
-import React from "react";
-
 import Sidebar from "../../components/sidebar";
 
-import { getCurrentUser } from "../../features/auth/queries";
-import { redirect } from "next/navigation";
-import { Navbar } from "../../components/navbar";
 import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
+import { CreateTaskModal } from "@/features/tasks/components/CreateTaskModal";
 import { CreateWorkspaceModal } from "@/features/workspaces/components/create-workspace-modal";
+import { Navbar } from "../../components/navbar";
+import { EditTaskModal } from "@/features/tasks/components/EditTaskModal";
 
 const DashboardLayout = async ({ children }) => {
-  const user = await getCurrentUser();
-  if (!user) redirect("/sign-in");
   return (
     <div className="min-h-screen">
       <CreateWorkspaceModal />
       <CreateProjectModal />
+      <CreateTaskModal />
+      <EditTaskModal />
       <div className="flex w-full h-full">
         <div className="fixed bg-slate-600 top-0 left-0 lg:w-[264px] hidden lg:block h-full overflow-auto">
           <Sidebar />

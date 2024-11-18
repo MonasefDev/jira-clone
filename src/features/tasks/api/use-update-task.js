@@ -3,12 +3,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-export const useUpdateProject = () => {
+export const useUpdateTask = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async ({ form, param }) => {
-      const response = await client.api.projects[":projectId"].$patch({
+      const response = await client.api.tasks[":taskId"].$patch({
         form,
         param,
       });
@@ -23,12 +23,13 @@ export const useUpdateProject = () => {
       return data;
     },
     onSuccess: (data) => {
-      toast.success("Project updated successfully");
-      router.push(`/workspaces/${data?.workspaceId}/projects/${data?.$id}`);
+      toast.success("Task updated successfully");
+      router.refresh();
+      router.push(`/workspaces/${data?.workspaceId}/tasks/${data?.$id}`);
       queryClient.invalidateQueries({
-        queryKey: ["projects", data?.workspaceId],
+        queryKey: ["tasks", data?.$id],
+        queryKey: ["tasks"],
       });
-      queryClient.invalidateQueries({ queryKey: ["project", data?.$id] });
     },
     onError: (err) => {
       toast.error(err.message);
