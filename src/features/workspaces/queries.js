@@ -1,12 +1,9 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { Account, Client, Databases, Query } from "node-appwrite";
+import { Query } from "node-appwrite";
 
 import { createSessionClient } from "../../lib/appwrite";
 import { DATABASE_ID, MEMBERS_ID, WORKSPACES_ID } from "../../lib/config";
-import { AUTH_COOKIE } from "../auth/constants";
-import { getMember } from "../members/utils";
 
 export const getWorkSpaces = async () => {
   try {
@@ -28,12 +25,20 @@ export const getWorkSpaces = async () => {
 
     const workspaces = await databases.listDocuments(
       DATABASE_ID,
-      WORKSPACES_ID,
-      [Query.orderDesc("$createdAt")],
-      [Query.contains("$id", workspaceIds)]
+      WORKSPACES_ID
     );
 
-    return { data: workspaces?.documents };
+    const workspacesOfCurrentUser = workspaces?.documents.filter((workspace) =>
+      workspaceIds.includes(workspace.$id)
+    );
+
+    // const workspaces = await databases.listDocuments(
+    //   DATABASE_ID,
+    //   WORKSPACES_ID,
+    //   [Query.orderDesc("$createdAt")],
+    //   [Query.contains("$id", workspaceIds)]
+    // );
+    return { data: workspacesOfCurrentUser };
   } catch (err) {
     return console.error(err);
   }

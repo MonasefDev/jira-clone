@@ -10,84 +10,6 @@ import { createAdminClient } from "@/lib/appwrite";
 import { z } from "zod";
 
 const app = new Hono()
-  .post(
-    "/",
-    sessionMiddleware,
-    zValidator("form", createTaskSchema),
-    async (c) => {
-      const databases = c.get("databases");
-      const user = c.get("user");
-      const {
-        workspaceId,
-        name,
-        description,
-        dueDate,
-        status,
-        projectId,
-        assigneeId,
-      } = c.req.valid("form");
-      console.log(workspaceId, name, description, dueDate, status, projectId);
-
-      const member = await getMember({
-        databases,
-        workspaceId,
-        userId: user.$id,
-      });
-
-      if (!member) {
-        return c.json(
-          new ApiResponse({
-            success: false,
-            statusCode: 401,
-            message: "Unauthorized",
-            data: {},
-          }),
-          401
-        );
-      }
-
-      const highestPositionTask = await databases.listDocuments(
-        DATABASE_ID,
-        TASKS_ID,
-        [
-          Query.equal("status", status),
-          Query.equal("workspaceId", workspaceId),
-          Query.orderAsc("position"),
-          Query.limit(1),
-        ]
-      );
-      const newPosition =
-        highestPositionTask.documents.length > 0
-          ? highestPositionTask.documents[0].position + 1000
-          : 1000;
-
-      const task = await databases.createDocument(
-        DATABASE_ID,
-        TASKS_ID,
-        ID.unique(),
-        {
-          name,
-          status,
-          workspaceId,
-          projectId,
-          dueDate,
-          assigneeId,
-          description,
-          position: newPosition,
-        }
-      );
-
-      return c.json(
-        new ApiResponse({
-          success: true,
-          statusCode: 201,
-          message: "Task created successfully",
-          data: task,
-        }),
-        201
-      );
-    }
-  )
   .get(
     "/",
     sessionMiddleware,
@@ -206,6 +128,236 @@ const app = new Hono()
           data: populatedTasks,
         }),
         200
+      );
+    }
+  )
+  .get("/:taskId", sessionMiddleware, async (c) => {
+    const { taskId } = c.req.param();
+    const databases = c.get("databases");
+    const user = c.get("user");
+    const { users } = await createAdminClient();
+
+    const task = await databases.getDocument(DATABASE_ID, TASKS_ID, taskId);
+    const currentMember = await getMember({
+      userId: user.$id,
+      workspaceId: task.workspaceId,
+      databases,
+    });
+    if (!currentMember) {
+      return c.json(
+        new ApiResponse({
+          success: false,
+          statusCode: 401,
+          message: "Unauthorized",
+          data: {},
+        }),
+        401
+      );
+    }
+
+    const project = await databases.getDocument(
+      DATABASE_ID,
+      PROJECTS_ID,
+      task.projectId
+    );
+    const member = await databases.getDocument(
+      DATABASE_ID,
+      MEMBERS_ID,
+      task.assigneeId
+    );
+    const assigneeUser = await users.get(member.userId);
+
+    const assignee = {
+      ...member,
+      name: assigneeUser.name,
+      email: assigneeUser.email,
+    };
+
+    return c.json(
+      new ApiResponse({
+        success: true,
+        statusCode: 200,
+        message: "Task fetched successfully",
+        data: { ...task, project, assignee },
+      }),
+      200
+    );
+  })
+  .delete("/:taskId", sessionMiddleware, async (c) => {
+    const databases = c.get("databases");
+    const user = c.get("user");
+    const { taskId } = c.req.param();
+
+    const task = await databases.getDocument(DATABASE_ID, TASKS_ID, taskId);
+
+    const member = await getMember({
+      databases,
+      workspaceId: task.workspaceId,
+      userId: user.$id,
+    });
+
+    if (!member) {
+      return c.json(
+        new ApiResponse({
+          success: false,
+          statusCode: 401,
+          message: "Unauthorized",
+          data: {},
+        }),
+        401
+      );
+    }
+
+    const deletedTask = await databases.deleteDocument(
+      DATABASE_ID,
+      TASKS_ID,
+      taskId
+    );
+
+    return c.json(
+      new ApiResponse({
+        success: true,
+        statusCode: 200,
+        message: "Task deleted successfully",
+        data: { $id: taskId },
+      }),
+      200
+    );
+  })
+  .post(
+    "/",
+    sessionMiddleware,
+    zValidator("form", createTaskSchema),
+    async (c) => {
+      const databases = c.get("databases");
+      const user = c.get("user");
+      const {
+        workspaceId,
+        name,
+        description,
+        dueDate,
+        status,
+        projectId,
+        assigneeId,
+      } = c.req.valid("form");
+
+      const member = await getMember({
+        databases,
+        workspaceId,
+        userId: user.$id,
+      });
+
+      if (!member) {
+        return c.json(
+          new ApiResponse({
+            success: false,
+            statusCode: 401,
+            message: "Unauthorized",
+            data: {},
+          }),
+          401
+        );
+      }
+
+      const highestPositionTask = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("status", status),
+          Query.equal("workspaceId", workspaceId),
+          Query.orderAsc("position"),
+          Query.limit(1),
+        ]
+      );
+      const newPosition =
+        highestPositionTask.documents.length > 0
+          ? highestPositionTask.documents[0].position + 1000
+          : 1000;
+
+      const task = await databases.createDocument(
+        DATABASE_ID,
+        TASKS_ID,
+        ID.unique(),
+        {
+          name,
+          status,
+          workspaceId,
+          projectId,
+          dueDate,
+          assigneeId,
+          description,
+          position: newPosition,
+        }
+      );
+
+      return c.json(
+        new ApiResponse({
+          success: true,
+          statusCode: 201,
+          message: "Task created successfully",
+          data: task,
+        }),
+        201
+      );
+    }
+  )
+  .patch(
+    "/:taskId",
+    sessionMiddleware,
+    zValidator("form", createTaskSchema.partial()),
+    async (c) => {
+      const databases = c.get("databases");
+      const user = c.get("user");
+      const { name, description, dueDate, status, projectId, assigneeId } =
+        c.req.valid("form");
+      const { taskId } = c.req.param();
+
+      const existingTask = await databases.getDocument(
+        DATABASE_ID,
+        TASKS_ID,
+        taskId
+      );
+
+      const member = await getMember({
+        databases,
+        workspaceId: existingTask.workspaceId,
+        userId: user.$id,
+      });
+
+      if (!member) {
+        return c.json(
+          new ApiResponse({
+            success: false,
+            statusCode: 401,
+            message: "Unauthorized",
+            data: {},
+          }),
+          401
+        );
+      }
+
+      const updatedTask = await databases.updateDocument(
+        DATABASE_ID,
+        TASKS_ID,
+        taskId,
+        {
+          name,
+          status,
+          projectId,
+          dueDate,
+          assigneeId,
+          description,
+        }
+      );
+
+      return c.json(
+        new ApiResponse({
+          success: true,
+          statusCode: 201,
+          message: "Task updated successfully",
+          data: updatedTask,
+        }),
+        201
       );
     }
   );
