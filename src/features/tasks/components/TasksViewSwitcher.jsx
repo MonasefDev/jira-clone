@@ -13,6 +13,8 @@ import { useTaskFilters } from "../hooks/use-task-filters";
 import { DataTable } from "./DataTable";
 import { columns } from "./column";
 import DataKanban from "./DataKanban";
+import { useBulkUpdateTask } from "../api/use-bulk-update-task";
+import { useCallback } from "react";
 
 export const TaskViewSwitcher = () => {
   const [{ status, assigneeId, projectId, dueDate, search }] = useTaskFilters();
@@ -21,6 +23,7 @@ export const TaskViewSwitcher = () => {
     defaultValue: "table",
   });
   const { workspaceId } = useParams();
+  const { mutate: bulkUpdate, isLoading: isBulkUpdating } = useBulkUpdateTask();
   const { data: tasks, isLoading: isLoadingTasks } = useGetTasks({
     workspaceId,
     status,
@@ -31,9 +34,15 @@ export const TaskViewSwitcher = () => {
   });
   const { open } = useCreateTaskModal();
 
-  const onKanbanChange = () => {
-    console.log("onKanbanChange");
-  };
+  const onKanbanChange = useCallback(
+    (tasks) => {
+      bulkUpdate({
+        json: { tasks },
+      });
+      console.log(tasks);
+    },
+    [bulkUpdate]
+  );
 
   return (
     <Tabs
