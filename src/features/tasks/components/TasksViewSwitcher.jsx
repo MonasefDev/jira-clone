@@ -12,6 +12,7 @@ import { DataFilters } from "./DataFilters";
 import { useTaskFilters } from "../hooks/use-task-filters";
 import { DataTable } from "./DataTable";
 import { columns } from "./column";
+import DataKanban from "./DataKanban";
 
 export const TaskViewSwitcher = () => {
   const [{ status, assigneeId, projectId, dueDate, search }] = useTaskFilters();
@@ -29,6 +30,11 @@ export const TaskViewSwitcher = () => {
     search,
   });
   const { open } = useCreateTaskModal();
+
+  const onKanbanChange = () => {
+    console.log("onKanbanChange");
+  };
+
   return (
     <Tabs
       defaultValue={view}
@@ -66,7 +72,7 @@ export const TaskViewSwitcher = () => {
               <DataTable columns={columns} data={tasks ?? []} />
             </TabsContent>
             <TabsContent value="kanban" className="mt-0">
-              {JSON.stringify(tasks)}
+              <DataKanban data={tasks ?? []} onChange={onKanbanChange} />
             </TabsContent>
             <TabsContent value="calender" className="mt-0">
               {JSON.stringify(tasks)}
