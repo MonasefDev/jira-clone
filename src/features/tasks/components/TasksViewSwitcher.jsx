@@ -12,14 +12,19 @@ import { DataFilters } from "./DataFilters";
 import { useTaskFilters } from "../hooks/use-task-filters";
 import { DataTable } from "./DataTable";
 import { columns } from "./column";
+import DataKanban from "./DataKanban";
+import { useBulkUpdateTask } from "../api/use-bulk-update-task";
+import { useCallback } from "react";
+import { DataCalendar } from "./DataCalendar";
 
-export const TaskViewSwitcher = () => {
+export const TaskViewSwitcher = ({ hideProjectFilter }) => {
   const [{ status, assigneeId, projectId, dueDate, search }] = useTaskFilters();
 
   const [view, setView] = useQueryState("task-view", {
     defaultValue: "table",
   });
   const { workspaceId } = useParams();
+  const { mutate: bulkUpdate, isPending: isBulkUpdating } = useBulkUpdateTask();
   const { data: tasks, isLoading: isLoadingTasks } = useGetTasks({
     workspaceId,
     status,
@@ -29,6 +34,16 @@ export const TaskViewSwitcher = () => {
     search,
   });
   const { open } = useCreateTaskModal();
+
+  const onKanbanChange = useCallback(
+    (tasks) => {
+      bulkUpdate({
+        json: { tasks },
+      });
+    },
+    [bulkUpdate]
+  );
+
   return (
     <Tabs
       defaultValue={view}
@@ -54,7 +69,7 @@ export const TaskViewSwitcher = () => {
           </Button>
         </div>
         <DottedSeparator className="my-4" />
-        <DataFilters />
+        <DataFilters hideProjectFilter={hideProjectFilter} />
         <DottedSeparator className="my-4" />
         {isLoadingTasks ? (
           <div className="w-full border rounded-lg h-[200px] flex flex-col items-center justify-center">
@@ -66,10 +81,14 @@ export const TaskViewSwitcher = () => {
               <DataTable columns={columns} data={tasks ?? []} />
             </TabsContent>
             <TabsContent value="kanban" className="mt-0">
-              {JSON.stringify(tasks)}
+              <DataKanban
+                data={tasks ?? []}
+                onChange={onKanbanChange}
+                isUpdating={isBulkUpdating}
+              />
             </TabsContent>
-            <TabsContent value="calender" className="mt-0">
-              {JSON.stringify(tasks)}
+            <TabsContent value="calender" className="mt-0  h-full pb-4">
+              <DataCalendar data={tasks ?? []} />
             </TabsContent>
           </>
         )}

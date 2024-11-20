@@ -14,9 +14,10 @@ import { Folder, ListCheckIcon, UserIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTaskFilters } from "../hooks/use-task-filters";
 import { TaskStatus } from "../types";
+import { useEffect } from "react";
 
 export const DataFilters = ({ hideProjectFilter }) => {
-  const { workspaceId } = useParams();
+  const { workspaceId, projectId: selectedProjectId } = useParams();
 
   const { data: projects, isLoading: isLoadingProjects } = useGetProjects({
     workspaceId,
@@ -38,6 +39,12 @@ export const DataFilters = ({ hideProjectFilter }) => {
 
   const [{ status, assigneeId, projectId, dueDate, search }, setFilters] =
     useTaskFilters();
+
+  useEffect(() => {
+    if (hideProjectFilter) {
+      setFilters({ projectId: selectedProjectId });
+    }
+  }, [selectedProjectId]);
 
   const onStatusChange = (value) => {
     if (value === "all") {
@@ -102,26 +109,28 @@ export const DataFilters = ({ hideProjectFilter }) => {
           ))}
         </SelectContent>
       </Select>
-      <Select
-        defaultValue={projectId ?? undefined}
-        onValueChange={(value) => onProjectChange(value)}
-      >
-        <SelectTrigger className="w-full lg:w-auto h-8">
-          <div className="flex items-center pr-2">
-            <Folder className="size-4 mr-2" />
-            <SelectValue placeholder="All projects" />
-          </div>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All projects</SelectItem>
-          <SelectSeparator />
-          {projectOptions?.map((project) => (
-            <SelectItem key={project.value} value={project.value}>
-              {project.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {!hideProjectFilter && (
+        <Select
+          defaultValue={projectId ?? undefined}
+          onValueChange={(value) => onProjectChange(value)}
+        >
+          <SelectTrigger className="w-full lg:w-auto h-8">
+            <div className="flex items-center pr-2">
+              <Folder className="size-4 mr-2" />
+              <SelectValue placeholder="All projects" />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All projects</SelectItem>
+            <SelectSeparator />
+            {projectOptions?.map((project) => (
+              <SelectItem key={project.value} value={project.value}>
+                {project.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
       <DatePicker
         placeholder="Due date"
         className="h-8 w-full lg:w-auto"

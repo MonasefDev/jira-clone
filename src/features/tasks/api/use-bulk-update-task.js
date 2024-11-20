@@ -1,13 +1,15 @@
 import { client } from "../../../lib/rpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-export const useDeleteTask = () => {
+export const useBulkUpdateTask = () => {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: async ({ param }) => {
-      const response = await client.api.tasks[":taskId"].$delete({
-        param,
+    mutationFn: async ({ json }) => {
+      const response = await client.api.tasks["bulk-update"].$post({
+        json,
       });
 
       const resJson = await response.json();
@@ -21,9 +23,15 @@ export const useDeleteTask = () => {
     },
 
     onSuccess: (data) => {
-      toast.success("Task deleted successfully");
+      router.refresh();
+      // toast.success("Tasks updated successfully");
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["task", data.$id] });
+      queryClient.invalidateQueries({
+        queryKey: ["project-analytics", data.projectId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-analytics", data.workspaceId],
+      });
     },
     onError: (err) => {
       toast.error(err.message);

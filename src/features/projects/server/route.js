@@ -1,15 +1,17 @@
-import { Hono } from "hono";
-import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { endOfMonth, startOfMonth, subMonths } from "date-fns";
+import { Hono } from "hono";
+import { ID, Query } from "node-appwrite";
+import { z } from "zod";
 
 import { getMember } from "@/features/members/utils";
-import { DATABASE_ID, PROJECTS_ID, WORKSPACES_ID } from "@/lib/config";
+import { DATABASE_ID, PROJECTS_ID, TASKS_ID } from "@/lib/config";
 import { uploadImage } from "@/lib/upload-image";
 
-import { createProjectSchema, updateProjectSchema } from "../schemas";
-import { sessionMiddleware } from "@/lib/session-middleware";
 import { ApiResponse } from "@/lib/api-response";
-import { ID, Query } from "node-appwrite";
+import { sessionMiddleware } from "@/lib/session-middleware";
+import { createProjectSchema, updateProjectSchema } from "../schemas";
+import { TaskStatus } from "@/features/tasks/types";
 
 const app = new Hono()
   .get(
@@ -49,6 +51,61 @@ const app = new Hono()
           statusCode: 200,
           message: "Success",
           data: projects?.documents,
+        }),
+        200
+      );
+    }
+  )
+  .get(
+    "/:projectId",
+    sessionMiddleware,
+    zValidator("param", z.object({ projectId: z.string() })),
+    async (c) => {
+      const databases = c.get("databases");
+      const user = c.get("user");
+      const { projectId } = c.req.valid("param");
+
+      const project = await databases.getDocument(
+        DATABASE_ID,
+        PROJECTS_ID,
+        projectId
+      );
+      if (!project) {
+        return c.json(
+          new ApiResponse({
+            success: false,
+            statusCode: 404,
+            message: "Project not found",
+            data: [],
+          }),
+          404
+        );
+      }
+
+      const member = await getMember({
+        databases,
+        userId: user.$id,
+        workspaceId: project?.workspaceId,
+      });
+
+      if (!member) {
+        return c.json(
+          new ApiResponse({
+            success: false,
+            statusCode: 401,
+            message: "Unauthorized",
+            data: [],
+          }),
+          401
+        );
+      }
+
+      return c.json(
+        new ApiResponse({
+          success: true,
+          statusCode: 200,
+          message: "Success",
+          data: project,
         }),
         200
       );
@@ -269,6 +326,190 @@ const app = new Hono()
         200
       );
     }
-  );
+  )
+  .get("/:projectId/analytics", sessionMiddleware, async (c) => {
+    const user = c.get("user");
+    const databases = c.get("databases");
+
+    const { projectId } = c.req.param();
+
+    const project = await databases.getDocument(
+      DATABASE_ID,
+      PROJECTS_ID,
+      projectId
+    );
+
+    const member = await getMember({
+      userId: user.$id,
+      workspaceId: project.workspaceId,
+      databases,
+    });
+
+    if (!member) {
+      return c.json(
+        new ApiResponse({
+          success: false,
+          statusCode: 401,
+          message: "Unauthorized",
+          data: undefined,
+        }),
+        401
+      );
+    }
+
+    const now = new Date();
+    const thisMonthStart = startOfMonth(now);
+    const thisMonthEnd = endOfMonth(now);
+    const lastMonthStart = startOfMonth(subMonths(now, 1));
+    const lastMonthEnd = endOfMonth(subMonths(now, 1));
+
+    const thisMonthTasks = await databases.listDocuments(
+      DATABASE_ID,
+      TASKS_ID,
+      [
+        Query.equal("projectId", projectId),
+        Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
+        Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
+      ]
+    );
+
+    const lastMonthTasks = await databases.listDocuments(
+      DATABASE_ID,
+      TASKS_ID,
+      [
+        Query.equal("projectId", projectId),
+        Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
+        Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
+      ]
+    );
+
+    const taskCount = thisMonthTasks.total;
+    const taskDifference = taskCount - lastMonthTasks.total;
+
+    const thisMonthAssignedTasks = await databases.listDocuments(
+      DATABASE_ID,
+      TASKS_ID,
+      [
+        Query.equal("projectId", projectId),
+        Query.equal("assigneeId", member.$id),
+        Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
+        Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
+      ]
+    );
+
+    const lastMonthAssignedTasks = await databases.listDocuments(
+      DATABASE_ID,
+      TASKS_ID,
+      [
+        Query.equal("projectId", projectId),
+        Query.equal("assigneeId", member.$id),
+        Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
+        Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
+      ]
+    );
+
+    const assignedTasksCount = thisMonthAssignedTasks.total;
+    const assignedTasksDifference = taskCount - lastMonthAssignedTasks.total;
+
+    const thisMonthIncompleteTasks = await databases.listDocuments(
+      DATABASE_ID,
+      TASKS_ID,
+      [
+        Query.equal("projectId", projectId),
+        Query.notEqual("status", TaskStatus.DONE),
+        Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
+        Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
+      ]
+    );
+
+    const lastMonthIncompleteTasks = await databases.listDocuments(
+      DATABASE_ID,
+      TASKS_ID,
+      [
+        Query.equal("projectId", projectId),
+        Query.notEqual("status", TaskStatus.DONE),
+        Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
+        Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
+      ]
+    );
+
+    const incompleteTaskCount = thisMonthIncompleteTasks.total;
+    const incompleteTaskDifference =
+      incompleteTaskCount - lastMonthIncompleteTasks.total;
+
+    const thisMonthCompletedTasks = await databases.listDocuments(
+      DATABASE_ID,
+      TASKS_ID,
+      [
+        Query.equal("projectId", projectId),
+        Query.equal("status", TaskStatus.DONE),
+        Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
+        Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
+      ]
+    );
+
+    const lastMonthCompletedTasks = await databases.listDocuments(
+      DATABASE_ID,
+      TASKS_ID,
+      [
+        Query.equal("projectId", projectId),
+        Query.equal("status", TaskStatus.DONE),
+        Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
+        Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
+      ]
+    );
+
+    const completedTaskCount = thisMonthCompletedTasks.total;
+    const completedTaskDifference =
+      completedTaskCount - lastMonthCompletedTasks.total;
+
+    const thisMonthOverdueTasks = await databases.listDocuments(
+      DATABASE_ID,
+      TASKS_ID,
+      [
+        Query.equal("projectId", projectId),
+        Query.notEqual("status", TaskStatus.DONE),
+        Query.lessThan("dueDate", now.toISOString()),
+        Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
+        Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
+      ]
+    );
+
+    const lastMonthOverdueTasks = await databases.listDocuments(
+      DATABASE_ID,
+      TASKS_ID,
+      [
+        Query.equal("projectId", projectId),
+        Query.notEqual("status", TaskStatus.DONE),
+        Query.lessThan("dueDate", now.toISOString()),
+        Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
+        Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
+      ]
+    );
+
+    const overdueTaskCount = thisMonthOverdueTasks.total;
+    const overdueTaskDifference =
+      overdueTaskCount - lastMonthOverdueTasks.total;
+
+    return c.json(
+      new ApiResponse({
+        success: true,
+        statusCode: 200,
+        message: "Analytics fetched successfully",
+        data: {
+          taskCount,
+          taskDifference,
+          assignedTasksCount,
+          assignedTasksDifference,
+          completedTaskCount,
+          completedTaskDifference,
+          incompleteTaskCount,
+          incompleteTaskDifference,
+          overdueTaskCount,
+          overdueTaskDifference,
+        },
+      })
+    );
+  });
 
 export default app;

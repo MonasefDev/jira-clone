@@ -26,10 +26,8 @@ export const useUpdateTask = () => {
       toast.success("Task updated successfully");
       router.refresh();
       router.push(`/workspaces/${data?.workspaceId}/tasks/${data?.$id}`);
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", data?.$id],
-        queryKey: ["tasks"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task", data.$id] });
     },
     onError: (err) => {
       toast.error(err.message);
