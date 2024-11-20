@@ -1,26 +1,40 @@
-import React from "react";
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import { Pencil1Icon } from "@radix-ui/react-icons";
+"use client";
 import { Button } from "@/components/ui/button";
+import { Pencil1Icon } from "@radix-ui/react-icons";
+import Link from "next/link";
 
-import { getCurrentUser } from "@/features/auth/queries";
-import { getProject } from "@/features/projects/queries";
+import { Analytics } from "@/components/Analytics";
+import { ErrorPage } from "@/components/ErrorPage";
+import { LoaderPage } from "@/components/LoaderPage";
+import { useGetProject } from "@/features/projects/api/use-get-project";
+import { useGetProjectAnalytics } from "@/features/projects/api/use-get-project-analytics";
 import { ProjectAvatar } from "@/features/projects/components/ProjectAvatar";
 import { TaskViewSwitcher } from "@/features/tasks/components/TasksViewSwitcher";
+import { useParams } from "next/navigation";
 
 // import { TaskViewSwitcher } from "@/features/tasks/components/task-view-switcher";
 
-const ProjectIdPage = async ({ params }) => {
-  const user = await getCurrentUser();
-  const initialValues = await getProject({
-    projectId: params.projectId,
+const ProjectIdPage = () => {
+  const { projectId } = useParams();
+  const { data: initialValues, isPending: isLoadingProject } = useGetProject({
+    projectId,
   });
+  const { data: anaylics, isPending: isLoadingAnalytics } =
+    useGetProjectAnalytics({
+      projectId,
+    });
 
-  if (!user) redirect("/sign-in");
-  if (!initialValues) {
-    throw new Error("Project not found");
+  if (isLoadingProject || isLoadingAnalytics) {
+    return <LoaderPage />;
   }
+
+  if (!initialValues) {
+    return <ErrorPage message="Project not found" />;
+  }
+  if (!anaylics) {
+    return <ErrorPage message="Project Analytics not found" />;
+  }
+
   return (
     <div className="flex flex-col gap-y-4">
       <div className="flex items-center justify-between">
@@ -42,19 +56,10 @@ const ProjectIdPage = async ({ params }) => {
           </Button>
         </div>
       </div>
-      <TaskViewSwitcher />
+      {anaylics ? <Analytics data={anaylics} /> : null}
+      <TaskViewSwitcher hideProjectFilter />
     </div>
   );
 };
 
 export default ProjectIdPage;
-
-// export async function generateMetadata({
-//   params,
-// }: ProjectIdPageProps): Promise<{ title: string, description: string }> {
-//   const { projectId } = params;
-//   return {
-//     title: `Project ${projectId}`,
-//     description: `Details and information about project ${projectId}.`,
-//   };
-// }

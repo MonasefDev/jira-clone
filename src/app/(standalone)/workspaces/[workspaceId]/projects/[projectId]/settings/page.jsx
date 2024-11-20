@@ -1,19 +1,24 @@
-import { redirect } from "next/navigation";
-
-import { getCurrentUser } from "@/features/auth/queries";
-import { getProject } from "@/features/projects/queries";
+"use client";
+import { ErrorPage } from "@/components/ErrorPage";
+import { LoaderPage } from "@/components/LoaderPage";
+import { useGetProject } from "@/features/projects/api/use-get-project";
 import { EditProjectForm } from "@/features/projects/components/EditProjectForm";
+import { useParams } from "next/navigation";
 
-const ProjectIdSettingsPage = async ({ params }) => {
-  const user = await getCurrentUser();
-
-  const initialValues = await getProject({
-    projectId: params.projectId,
+const ProjectIdSettingsPage = () => {
+  const { projectId } = useParams();
+  const { data: initialValues, isPending: isLoadingProject } = useGetProject({
+    projectId,
   });
 
-  if (!user) redirect("/sign-in");
+  if (isLoadingProject) {
+    return <LoaderPage />;
+  }
 
-  if (!initialValues) throw new Error("Project not found");
+  if (!initialValues) {
+    return <ErrorPage message="Project not found" />;
+  }
+
   return (
     <div className="w-full lg:max-w-2xl">
       <EditProjectForm initialValues={initialValues} />

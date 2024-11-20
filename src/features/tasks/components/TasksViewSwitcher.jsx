@@ -17,14 +17,14 @@ import { useBulkUpdateTask } from "../api/use-bulk-update-task";
 import { useCallback } from "react";
 import { DataCalendar } from "./DataCalendar";
 
-export const TaskViewSwitcher = () => {
+export const TaskViewSwitcher = ({ hideProjectFilter }) => {
   const [{ status, assigneeId, projectId, dueDate, search }] = useTaskFilters();
 
   const [view, setView] = useQueryState("task-view", {
     defaultValue: "table",
   });
   const { workspaceId } = useParams();
-  const { mutate: bulkUpdate, isLoading: isBulkUpdating } = useBulkUpdateTask();
+  const { mutate: bulkUpdate, isPending: isBulkUpdating } = useBulkUpdateTask();
   const { data: tasks, isLoading: isLoadingTasks } = useGetTasks({
     workspaceId,
     status,
@@ -40,7 +40,6 @@ export const TaskViewSwitcher = () => {
       bulkUpdate({
         json: { tasks },
       });
-      console.log(tasks);
     },
     [bulkUpdate]
   );
@@ -70,7 +69,7 @@ export const TaskViewSwitcher = () => {
           </Button>
         </div>
         <DottedSeparator className="my-4" />
-        <DataFilters />
+        <DataFilters hideProjectFilter={hideProjectFilter} />
         <DottedSeparator className="my-4" />
         {isLoadingTasks ? (
           <div className="w-full border rounded-lg h-[200px] flex flex-col items-center justify-center">
@@ -82,7 +81,11 @@ export const TaskViewSwitcher = () => {
               <DataTable columns={columns} data={tasks ?? []} />
             </TabsContent>
             <TabsContent value="kanban" className="mt-0">
-              <DataKanban data={tasks ?? []} onChange={onKanbanChange} />
+              <DataKanban
+                data={tasks ?? []}
+                onChange={onKanbanChange}
+                isUpdating={isBulkUpdating}
+              />
             </TabsContent>
             <TabsContent value="calender" className="mt-0  h-full pb-4">
               <DataCalendar data={tasks ?? []} />

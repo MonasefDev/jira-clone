@@ -4,6 +4,7 @@ import { TaskStatus } from "../types";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import KanbanColumnHeader from "./KanbanColumnHeader";
 import { KanbanCard } from "./KanbanCard";
+import { Loader } from "lucide-react";
 
 const boards = [
   TaskStatus.BACKLOG,
@@ -13,7 +14,7 @@ const boards = [
   TaskStatus.DONE,
 ];
 
-export const DataKanban = ({ data, onChange }) => {
+export const DataKanban = ({ data, onChange, isUpdating }) => {
   const [tasks, setTasks] = useState(() => {
     const initialTasks = {
       [TaskStatus.BACKLOG]: [],
@@ -56,7 +57,6 @@ export const DataKanban = ({ data, onChange }) => {
   const onDragEnd = useCallback(
     (result) => {
       if (!result.destination) return;
-      console.log("ON FIRED");
 
       const { source, destination } = result;
       const sourceStatus = source.droppableId;
@@ -66,10 +66,8 @@ export const DataKanban = ({ data, onChange }) => {
       if (
         sourceStatus === destinationStatus &&
         source.index === destination.index
-      ) {
-        console.log("Task dropped in the same position, no update needed");
+      )
         return;
-      }
 
       let updatesPayload = [];
 
@@ -149,7 +147,12 @@ export const DataKanban = ({ data, onChange }) => {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex overflow-x-auto">
+      <div className="flex overflow-x-auto relative">
+        {isUpdating && (
+          <div className="absolute inset-0 mx-2 rounded-md bg-muted/50 z-10 flex items-center justify-center">
+            <Loader className="animate-spin size-6 text-muted-foreground" />
+          </div>
+        )}
         {boards.map((board) => {
           return (
             <div
